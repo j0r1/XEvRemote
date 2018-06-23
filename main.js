@@ -207,6 +207,16 @@ function onSendText()
     }
 }
 
+function onKeyButton(keyName)
+{
+    var code = keyMap["normalmap"][keyName];
+    if (!code)
+        return;
+
+    ws.send(JSON.stringify({ "type": "key", "keycode": code, "pressed": true }));
+    ws.send(JSON.stringify({ "type": "key", "keycode": code, "pressed": false }));
+}
+
 function main()
 {
     log("V16");
