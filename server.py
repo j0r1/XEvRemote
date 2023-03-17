@@ -9,7 +9,12 @@ xc = XConn(sys.argv[1])
 async def serverMain(webSocket, path):
     print("Connection from", webSocket)
     while True:
-        cmd = json.loads(await webSocket.recv())
+        s = await webSocket.recv()
+        if s == "PING":
+            await webSocket.send("PONG")
+            continue
+
+        cmd = json.loads(s)
         if cmd["type"] == "moverel":
             xc.sendRelativeMotionEvent(cmd["dx"], cmd["dy"])
         elif cmd["type"] == "click":

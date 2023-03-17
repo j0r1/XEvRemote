@@ -47,9 +47,15 @@ class Connection
         console.log(msg);
     }
 
+    sendPing()
+    {
+        if (this.ws && this.ws.readyState == 1)
+            this.ws.send("PING");
+    }
+
     sendCommand(obj)
     {
-        if (this.ws)
+        if (this.ws && this.ws.readyState == 1)
             this.ws.send(JSON.stringify(obj));
     }
 }
@@ -252,14 +258,36 @@ function onKeyButton(keyName)
     conn.sendCommand({ "type": "key", "keycode": code, "pressed": false });
 }
 
+function startConnection()
+{
+    let wsUrl = "ws://" + location.hostname + ":8081";
+    conn = new Connection(wsUrl);
+    conn.onConnectionStateChanged = onConnectionStateChanged;
+    conn.onMessage = (msg) => { conn.lastHeardTime = performance.now(); console.log("Got message: " + msg.data); }
+    conn.lastHeardTime = performance.now();
+}
+
+function connectionMonitorTimer()
+{
+    conn.sendPing();
+
+    if (performance.now() - conn.lastHeardTime > 1000)
+    {
+        console.log("Restarting connection");
+        conn.destroy();
+        conn = null;
+
+        startConnection();
+    }
+}
+
 function main()
 {
-    log("V17");
+    log("V18");
     try
     {
-        let wsUrl = "ws://" + location.hostname + ":8081";
-        conn = new Connection(wsUrl);
-        conn.onConnectionStateChanged = onConnectionStateChanged;
+        startConnection();
+        setInterval(connectionMonitorTimer, 200);
 
         let el = document.getElementById("touchdiv");
         el.addEventListener("touchstart", handleStart, false);
