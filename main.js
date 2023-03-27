@@ -250,6 +250,12 @@ function onSendText()
 
 function onKeyButton(keyName)
 {
+    if (keyName == "RightClick")
+    {
+        conn.sendCommand({ "type": "click", "button": 3 });
+        return;
+    }
+
     var code = keyMap["normalmap"][keyName];
     if (!code)
         return;
@@ -283,7 +289,7 @@ function connectionMonitorTimer()
 
 function main()
 {
-    log("V18");
+    log("V19");
     try
     {
         startConnection();
