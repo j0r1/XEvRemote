@@ -1,10 +1,14 @@
 from xconn.xconn import XConn
+from uinput.uinput import UInput
 import websockets
 import asyncio
 import json
 import sys
 
-xc = XConn(sys.argv[1])
+if sys.argv[1].startswith("/dev"):
+    xc = UInput(sys.argv[1])
+else:
+    xc = XConn(sys.argv[1])
 
 async def serverMain(webSocket, path):
     print("Connection from", webSocket)
