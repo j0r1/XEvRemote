@@ -26,7 +26,7 @@ if "CXX" in os.environ and os.environ["CXX"].startswith("ccache"):
 
 extensions = [
     Extension("uinput", 
-        [ "uinput.pyx" ],
+        [ "uinput.pyx", "uinputdev.cpp" ],
         include_dirs = extraIncludes,
         libraries = libraries,
         library_dirs = libDirs,
