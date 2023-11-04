@@ -52,7 +52,7 @@ bool UInputDev::init(const std::string &fileName)
 	struct uinput_user_dev device;
 
 	memset(&device, 0, sizeof(device));
-	strcpy(device.name, "Virtual keyboard and mouse");
+	strcpy(device.name, "XEvRemote virtual keyboard and mouse");
 	device.id.bustype = BUS_USB;
 	device.id.vendor = 1;
 	device.id.product = 1;

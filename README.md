@@ -24,3 +24,16 @@ to my TV.
  - `server.py`: a small websocket server that should run on the same host
    as the webserver. It will listen for connections on port 8081, and the
    `main.js` file has this port number for the websocket server hardcoded.
+
+TODO: update info for /dev/uinput method
+
+Needed to add a udev rule
+
+    ACTION=="add", SUBSYSTEM=="input", KERNEL=="event*", ATTRS{name}=="XEvRemote virtual keyboard and mouse", TAG+="seat", RUN+="/bin/sh -c '/usr/bin/ln -sf /run/udev/data/c%M:%m /run/udev/data/+input:`/usr/bin/echo %p | /usr/bin/cut -f 5 -d /` > /tmp/virtual_kb_mouse_udev.log '"
+
+For control by systemd, the device needed to have the tag 'seat'. The code was also
+looking for a file `/run/udev/data/+input:input6`, which didn't exist. Instead, only
+a file c13:69 (using major/minor device number) was created. The udev rule gets the
+right `inputX` name and creats a symlink to the existing device. There's got to be
+a cleaner way to do this, but for now this seems to work.
+    
