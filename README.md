@@ -12,6 +12,10 @@ to my TV.
    some Python bindings for a
    file from [xevdevserver](http://research.edm.uhasselt.be/jori/page/Misc/XevdevServer.html)
 
+ - `uinput`: similar to the `xconn` module, but instead of using XTest,
+   keyboard and mouse events are injected into the system using
+   `/dev/uinput`, which in turn creates a `/dev/input/eventX` device.
+
  - `processmodmap.py`: helper script which reads [xmodmap](https://www.x.org/archive/X11R6.8.1/doc/xmodmap.1.html)
    output to get keyboard event codes. Redirect the output to a file
    called `keymap.js`
@@ -24,16 +28,27 @@ to my TV.
  - `server.py`: a small websocket server that should run on the same host
    as the webserver. It will listen for connections on port 8081, and the
    `main.js` file has this port number for the websocket server hardcoded.
+   Either takes an X11 display, e.g. `:0`, as argument, or `/dev/uinput`,
+   depending on the input method used.
 
-TODO: update info for /dev/uinput method
+### Using /dev/uinput
 
-Needed to add a udev rule
+On my Slackware system using X11, using the /dev/uinput method works without
+extra modifications needed. On my Raspberry Pi that runs systemd and Wayland,
+the virtual input device that's added was not recognized immediately because
+of two issues:
+
+ - from the systemd-logind source code, it appears that a `"seat"` tag needs
+   to be present
+ - the tag was looked for in a file like `/run/udev/data/+input:input6`, which
+   wasn't created by `udev`. Instead only a `c13:69` (13 and 69 are major and
+   minor device numbers) existed in this directory (for which the tag could be
+   successfully added).
+
+To resolve both of these issues, I added the following udev rule:
 
     ACTION=="add", SUBSYSTEM=="input", KERNEL=="event*", ATTRS{name}=="XEvRemote virtual keyboard and mouse", TAG+="seat", RUN+="/bin/sh -c '/usr/bin/ln -sf /run/udev/data/c%M:%m /run/udev/data/+input:`/usr/bin/echo %p | /usr/bin/cut -f 5 -d /` > /tmp/virtual_kb_mouse_udev.log '"
 
-For control by systemd, the device needed to have the tag 'seat'. The code was also
-looking for a file `/run/udev/data/+input:input6`, which didn't exist. Instead, only
-a file c13:69 (using major/minor device number) was created. The udev rule gets the
-right `inputX` name and creats a symlink to the existing device. There's got to be
-a cleaner way to do this, but for now this seems to work.
-    
+This rule gets the right `inputX` name and creates a symlink to the existing device. 
+There's got to be a cleaner way to resolve this, but for now this seems to work.
+
