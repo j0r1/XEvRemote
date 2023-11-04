@@ -3,6 +3,7 @@
 import subprocess
 import pprint
 import json
+import sys
 
 charToName = {
  '0': '0',
@@ -230,7 +231,28 @@ def getName(s):
         #raise Exception(f"Can't find name in '{s}'")
     return s[idx+1:idx2]
 
+def usage():
+    print("""
+Usage: ./processmodmap.py type
+
+    where type is either "X", in case the XTest extension will be used to
+    inject keyboard events, or "uinput" in case /dev/uinput will be used
+    for this. The basic map will be the same, but an offset of 8 will be
+    defined in case /dev/uinput is used.
+""")
+    sys.exit(-1)
+
 def main():
+    if len(sys.argv) != 2:
+        usage()
+    
+    if sys.argv[1] == "X":
+        keyOffset = 0
+    elif sys.argv[1] == "uinput":
+        keyOffset = 8
+    else:
+        usage()
+
     normalKeyCodeMap = { }
     shiftKeyCodeMap = { }
     altGrKeyCodeMap = { }
@@ -280,8 +302,9 @@ def main():
             "charnames": charToName
     }
 
-    print("keyMap = ")
+    print("var keyMap = ")
     print(json.dumps(kbdInfo, indent=4, sort_keys=True))
+    print("var keyMapOffset = {};".format(keyOffset))
     #pprint.pprint(names)
 
 

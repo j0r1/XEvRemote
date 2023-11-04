@@ -215,13 +215,13 @@ function onSendText()
     var txt = txtElem.value;
     txtElem.value = "";
 
-    log(txt);
+    log("Sending text: " + txt);
 
     for (var i = 0 ; i < txt.length ; i++)
     {
         var c = txt[i];
         var charName = keyMap["charnames"][c];
-        log(charName)
+        log("Char is: " + charName)
         if (charName)
         {
             for (var j = 0 ; j < mapNames.length ; j++)
@@ -232,7 +232,14 @@ function onSendText()
                 var code = keyMap[mapName][charName];
                 if (code !== undefined)
                 {
+                    var oldCode = code;
+                    if (modifier !== null)
+                        modifier -= keyMapOffset;
+
+                    code -= keyMapOffset;
+                    log("Converting code " + oldCode + " to " + code);
                     log("sending " + code + " " + modifier);
+
                     if (modifier !== null)
                         conn.sendCommand({ "type": "key", "keycode": modifier, "pressed": true });
                     
@@ -259,6 +266,8 @@ function onKeyButton(keyName)
     var code = keyMap["normalmap"][keyName];
     if (!code)
         return;
+
+    code -= keyMapOffset;
 
     conn.sendCommand({ "type": "key", "keycode": code, "pressed": true });
     conn.sendCommand({ "type": "key", "keycode": code, "pressed": false });
@@ -289,7 +298,7 @@ function connectionMonitorTimer()
 
 function main()
 {
-    log("V19");
+    log("V20");
     try
     {
         startConnection();
