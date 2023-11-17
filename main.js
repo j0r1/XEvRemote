@@ -87,8 +87,6 @@ function log(s)
 
 var threshold = 10;
 var accel = 4;
-var dxRemainder = 0;
-var dyRemainder = 0;
 
 var activeTouches = { }
 
@@ -100,6 +98,8 @@ function handleStart(e)
         var n = touches[i].identifier;
         activeTouches[n] = { "x": touches[i].pageX, "y": touches[i].pageY, "time": Date.now(), "relx": 0, "rely": 0 };
     }
+
+    startNewMoveScale();
 }
 
 function getNumActiveTouches()
@@ -143,11 +143,11 @@ function handleCancel(e)
 }
 
 var scrollSum = 0;
-var scrollDiv = 10;
+var scrollDiv = 15;
 
 function processScroll(dyLeft)
 {
-    scrollSum += dyLeft/5;
+    scrollSum += dyLeft/scrollDiv;
 
     while (scrollSum > 0)
     {
@@ -168,6 +168,29 @@ function processScroll(dyLeft)
     }
 }
 
+let dxAccum = 0;
+let dyAccum = 0;
+let dxyScale = 1.5;
+
+function startNewMoveScale()
+{
+    dxAccum = 0;
+    dyAccum = 0;
+    //log("New move started: " + new Date());
+}
+
+function scaleMovement(dx, dy)
+{
+    dxAccum += dx/dxyScale;
+    dyAccum += dy/dxyScale;
+
+    let dx0 = Math.trunc(dxAccum);
+    let dy0 = Math.trunc(dyAccum);
+    dxAccum -= dx0;
+    dyAccum -= dy0;
+    return [dx0, dy0];
+}
+
 function handleMove(e)
 {
     var touches = e.changedTouches;
@@ -182,8 +205,8 @@ function handleMove(e)
         var at = activeTouches[n];
         var dx = (x - at.x);
         var dy = (y - at.y);
-        var dxLeft = Math.round(dx - at.relx);
-        var dyLeft = Math.round(dy - at.rely);
+        var dxLeft = (dx - at.relx);
+        var dyLeft = (dy - at.rely);
 
         at.relx += dxLeft;
         at.rely += dyLeft;
@@ -194,6 +217,8 @@ function handleMove(e)
         }
         else
         {
+            [ dxLeft, dyLeft ] = scaleMovement(dxLeft, dyLeft);
+
             if (dxLeft != 0 || dyLeft != 0)
             {
                 var q = dxLeft*dxLeft+dyLeft*dyLeft;
@@ -298,9 +323,11 @@ function connectionMonitorTimer()
 
 function main()
 {
-    log("V20");
+    log("V22");
     try
     {
+        [ threshold, accel, scrollDiv, dxyScale ] = loadSettings();
+
         startConnection();
         setInterval(connectionMonitorTimer, 200);
 

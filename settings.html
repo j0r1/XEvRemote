@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Number Input Form</title>
+	<script src="settings.js"></script>
+    <style>
+        .row {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .label {
+            flex: 1;
+        }
+
+        .input {
+            flex: 1;
+        }
+    </style>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
+</head>
+<body onload="settingsMain()">
+    <div class="row">
+        <div class="label">Threshold:</div>
+        <input id="idthreshold" type="number" class="input" onchange="onSettingsChanged()" />
+    </div>
+    <div class="row">
+        <div class="label">Accel:</div>
+        <input id="idaccel" type="number" class="input" onchange="onSettingsChanged()" />
+    </div>
+    <div class="row">
+        <div class="label">Scroll slowdown factor:</div>
+        <input id="idscroll" type="number" class="input" onchange="onSettingsChanged()" />
+    </div>
+    <div class="row">
+        <div class="label">Movement slowdown factor:</div>
+        <input id="idmove" type="number" class="input" onchange="onSettingsChanged()" />
+    </div>
+</body>
+</html>
+
