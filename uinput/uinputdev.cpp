@@ -125,7 +125,7 @@ void UInputDev::sendMouseButtonEvent(int nr, bool pressed)
 		return;
 	if (!writeEvent(EV_SYN))
 		return;
-	cerr << "Wrote button press for nr " << nr << " pressed: " << ((pressed)?"true":"false") << endl;
+	//cerr << "Wrote button press for nr " << nr << " pressed: " << ((pressed)?"true":"false") << endl;
 }
 
 void UInputDev::sendRelativeMotionEvent(int x, int y)
@@ -136,7 +136,7 @@ void UInputDev::sendRelativeMotionEvent(int x, int y)
 		return;
 	if (!writeEvent(EV_SYN))
 		return;
-	cerr << "Relative motion by " << x << "," << y << endl;
+	//cerr << "Relative motion by " << x << "," << y << endl;
 }
 
 void UInputDev::sendScrollUpEvent(int amount)
@@ -145,7 +145,7 @@ void UInputDev::sendScrollUpEvent(int amount)
 		return;
 	if (!writeEvent(EV_SYN))
 		return;
-	cerr << "Scrolled up by " << amount << endl;
+	//cerr << "Scrolled up by " << amount << endl;
 }
 
 void UInputDev::sendScrollDownEvent(int amount)
@@ -154,7 +154,7 @@ void UInputDev::sendScrollDownEvent(int amount)
 		return;
 	if (!writeEvent(EV_SYN))
 		return;
-	cerr << "Scrolled down by " << amount << endl;
+	//cerr << "Scrolled down by " << amount << endl;
 }
 
 bool UInputDev::writeEvent(int type, int code, int value)
