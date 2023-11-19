@@ -1,3 +1,7 @@
+const connMonitorTimeout = 200; // Also sends ping at this interval
+const connReopenDelay = 1000;
+const connResetTimout = 1000; // If no activity for this long, connection will be reset
+
 class Connection
 {
     constructor(url)
@@ -16,7 +20,7 @@ class Connection
         this.ws.onopen = null;
         this.ws.close();
         this.ws = null;
-        console.log("Websocket command connection destroyed");
+        log("Websocket command connection destroyed");
     }
 
     onConnectionStateChanged(connected) { } // Override this!
@@ -36,9 +40,9 @@ class Connection
         this.ws.onopen = null;
         this.ws = null;
         setTimeout(() => { 
-            console.log("Trying to re-open websocket");
+            log("Trying to re-open websocket");
             this._openWS()
-        }, 1000); // Wait a bit and try again
+        }, connReopenDelay); // Wait a bit and try again
     }
 
     onMessage(msg) // Override if needed!
@@ -240,13 +244,13 @@ function onSendText()
     var txt = txtElem.value;
     txtElem.value = "";
 
-    log("Sending text: " + txt);
+    //log("Sending text: " + txt);
 
     for (var i = 0 ; i < txt.length ; i++)
     {
         var c = txt[i];
         var charName = keyMap["charnames"][c];
-        log("Char is: " + charName)
+        //log("Char is: " + charName)
         if (charName)
         {
             for (var j = 0 ; j < mapNames.length ; j++)
@@ -262,8 +266,8 @@ function onSendText()
                         modifier -= keyMapOffset;
 
                     code -= keyMapOffset;
-                    log("Converting code " + oldCode + " to " + code);
-                    log("sending " + code + " " + modifier);
+                    //log("Converting code " + oldCode + " to " + code);
+                    //log("sending " + code + " " + modifier);
 
                     if (modifier !== null)
                         conn.sendCommand({ "type": "key", "keycode": modifier, "pressed": true });
@@ -303,7 +307,10 @@ function startConnection()
     let wsUrl = "ws://" + location.hostname + ":8081";
     conn = new Connection(wsUrl);
     conn.onConnectionStateChanged = onConnectionStateChanged;
-    conn.onMessage = (msg) => { conn.lastHeardTime = performance.now(); console.log("Got message: " + msg.data); }
+    conn.onMessage = (msg) => { 
+        conn.lastHeardTime = performance.now();
+        log("Got message: " + msg.data + " at " + new Date());
+    }
     conn.lastHeardTime = performance.now();
 }
 
@@ -311,9 +318,9 @@ function connectionMonitorTimer()
 {
     conn.sendPing();
 
-    if (performance.now() - conn.lastHeardTime > 1000)
+    if (performance.now() - conn.lastHeardTime > connResetTimout)
     {
-        console.log("Restarting connection");
+        log("Restarting connection");
         conn.destroy();
         conn = null;
 
@@ -323,13 +330,28 @@ function connectionMonitorTimer()
 
 function main()
 {
-    log("V22");
+    log("V23");
+
+    if (location.hash === "#log")
+    {
+        document.getElementById("log").style.height = "30%";
+    }
+
     try
     {
         [ threshold, accel, scrollDiv, dxyScale ] = loadSettings();
 
         startConnection();
-        setInterval(connectionMonitorTimer, 200);
+        setInterval(connectionMonitorTimer, connMonitorTimeout);
+
+        // Use the same callback for when the tab has become active again
+        document.addEventListener("visibilitychange", function() {
+            if (document.visibilityState === 'visible')
+            {
+                log("Detected visible");
+                connectionMonitorTimer();
+            }
+        });
 
         let el = document.getElementById("touchdiv");
         el.addEventListener("touchstart", handleStart, false);
