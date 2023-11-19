@@ -2,6 +2,8 @@ const connMonitorTimeout = 200; // Also sends ping at this interval
 const connReopenDelay = 1000;
 const connResetTimout = 1000; // If no activity for this long, connection will be reset
 
+let isConnected = false;
+
 class Connection
 {
     constructor(url)
@@ -80,6 +82,8 @@ function onConnectionStateChanged(connected)
         tbl.style.display = "none";
         d.style.display = "";
     }
+
+    isConnected = connected;
 }
 
 function log(s)
@@ -309,7 +313,7 @@ function startConnection()
     conn.onConnectionStateChanged = onConnectionStateChanged;
     conn.onMessage = (msg) => { 
         conn.lastHeardTime = performance.now();
-        log("Got message: " + msg.data + " at " + new Date());
+        //log("Got message: " + msg.data + " at " + new Date());
     }
     conn.lastHeardTime = performance.now();
 }
@@ -344,12 +348,14 @@ function main()
         startConnection();
         setInterval(connectionMonitorTimer, connMonitorTimeout);
 
-        // Use the same callback for when the tab has become active again
         document.addEventListener("visibilitychange", function() {
             if (document.visibilityState === 'visible')
             {
                 log("Detected visible");
                 connectionMonitorTimer();
+
+                if (!isConnected)
+                    location.reload(true);
             }
         });
 
