@@ -10,7 +10,7 @@ if sys.argv[1].startswith("/dev"):
 else:
     xc = XConn(sys.argv[1])
 
-async def serverMain(webSocket, path):
+async def serverMain(webSocket):
     print("Connection from", webSocket)
     while True:
         s = await webSocket.recv()
@@ -37,8 +37,10 @@ async def serverMain(webSocket, path):
         else:
             print("Unknown command", cmd)
 
-startServer = websockets.serve(serverMain, port=8081)
+async def main():
+    startServer = await websockets.serve(serverMain, port=8081)
+    print("Server running on port 8081")
+    await asyncio.Future()
 
-loop = asyncio.get_event_loop()  
-loop.run_until_complete(startServer)  
-loop.run_forever()
+asyncio.run(main())
+
